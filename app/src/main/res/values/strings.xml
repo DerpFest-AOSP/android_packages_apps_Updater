@@ -22,7 +22,6 @@
         Optional placeholders replaced at runtime:
           {device} - Device name
           {type} - Build type
-          {incr} - Incremental version
     -->
     <string name="updater_server_url" translatable="false">https://raw.githubusercontent.com/DerpFest-AOSP/Updater-Stuff/master/{device}.json</string>
 

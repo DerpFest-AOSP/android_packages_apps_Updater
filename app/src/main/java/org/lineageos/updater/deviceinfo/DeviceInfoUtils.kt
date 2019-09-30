@@ -15,7 +15,6 @@ object DeviceInfoUtils : SettingsLibDeviceInfoUtils() {
     private const val PROP_ALLOW_MAJOR_UPGRADES = "derpfest.updater.allow_major_upgrades"
     private const val PROP_BUILD_DATE = "ro.build.date.utc"
     private const val PROP_BUILD_VERSION = "ro.derpfest.version"
-    private const val PROP_BUILD_VERSION_INCREMENTAL = "ro.build.version.incremental"
     private const val PROP_DEVICE = "ro.derpfest.device"
     private const val PROP_NEXT_DEVICE = "ro.updater.next_device"
     private const val PROP_RELEASE_TYPE = "ro.derpfest.releasetype"
@@ -33,9 +32,6 @@ object DeviceInfoUtils : SettingsLibDeviceInfoUtils() {
 
     @JvmStatic
     val buildVersion: String = SystemProperties.get(PROP_BUILD_VERSION, "")
-
-    @JvmStatic
-    val buildVersionIncremental: String = SystemProperties.get(PROP_BUILD_VERSION_INCREMENTAL, "")
 
     @JvmStatic
     val device: String = SystemProperties.get(PROP_NEXT_DEVICE, SystemProperties.get(PROP_DEVICE))
