@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2023 DerpFest
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="blocked_update_dialog_message_custom">此更新無法透過更新應用程式安裝。請嘗試透過 Recovery 或 Fastboot 安裝更新。</string>
+</resources>
