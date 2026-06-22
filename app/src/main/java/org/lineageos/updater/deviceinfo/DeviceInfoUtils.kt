@@ -17,9 +17,7 @@ object DeviceInfoUtils : SettingsLibDeviceInfoUtils() {
     private const val PROP_BUILD_VERSION = "ro.derpfest.version"
     private const val PROP_DEVICE = "ro.derpfest.device"
     private const val PROP_NEXT_DEVICE = "ro.updater.next_device"
-    private const val PROP_RELEASE_TYPE = "ro.derpfest.releasetype"
     private const val PROP_UPDATER_ALLOW_DOWNGRADING = "derpfest.updater.allow_downgrading"
-    private const val PROP_UPDATER_URI = "derpfest.updater.uri"
     private const val PROP_UPDATE_RECOVERY = "persist.vendor.recovery_update"
 
     // Read-only
@@ -39,9 +37,6 @@ object DeviceInfoUtils : SettingsLibDeviceInfoUtils() {
     @JvmStatic
     val isABDevice: Boolean = SystemProperties.getBoolean(PROP_AB_DEVICE, false)
 
-    @JvmStatic
-    val releaseType: String = SystemProperties.get(PROP_RELEASE_TYPE)
-
     // Mutable at runtime
     @JvmStatic
     val isDowngradingAllowed: Boolean
@@ -55,8 +50,4 @@ object DeviceInfoUtils : SettingsLibDeviceInfoUtils() {
     var isRecoveryUpdateEnabled: Boolean
         get() = SystemProperties.getBoolean(PROP_UPDATE_RECOVERY, false)
         set(value) = SystemProperties.set(PROP_UPDATE_RECOVERY, value.toString())
-
-    @JvmStatic
-    val updaterUri: String
-        get() = SystemProperties.get(PROP_UPDATER_URI, "")
 }
