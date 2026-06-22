@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: The LineageOS Project
+ * SPDX-FileCopyrightText: DerpFest AOSP
  * SPDX-License-Identifier: Apache-2.0
  */
 package org.lineageos.updater.data.source.network
@@ -28,6 +29,8 @@ class UpdatesNetworkDataSource(private val context: Context) {
         .followRedirects(false)
         .build()
 
+    private val json = Json { ignoreUnknownKeys = true }
+
     fun fetchUpdates(): List<NetworkUpdate> {
         val request = Request.Builder()
             .url(serverUrl)
@@ -41,6 +44,6 @@ class UpdatesNetworkDataSource(private val context: Context) {
             response.body?.string() ?: throw IOException("Empty response body")
         }
 
-        return Json.decodeFromString<List<NetworkUpdate>>(responseBody)
+        return json.decodeFromString<NetworkUpdateResponse>(responseBody).response
     }
 }
