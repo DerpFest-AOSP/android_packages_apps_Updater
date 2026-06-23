@@ -115,7 +115,7 @@ fun DeviceInfoBanner(
 private fun DeviceInfoBannerPreview() {
     SettingsTheme {
         DeviceInfoBanner(
-            buildVersion = "23.2",
+            buildVersion = "16.2",
             androidVersion = "16",
             buildDate = "Feb 20",
             securityPatch = "Feb 2026",

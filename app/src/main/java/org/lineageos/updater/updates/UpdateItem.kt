@@ -248,7 +248,7 @@ private fun UpdateItemIdleCollapsedPreview() {
             state = UpdateItemState(
                 downloadId = "preview",
                 buildDate = "Apr 27",
-                buildVersion = "LineageOS 23.2",
+                buildVersion = "DerpFest v16.0",
                 status = "",
                 isLocal = false,
                 fileSize = "1.1 GB",
@@ -281,7 +281,7 @@ private fun UpdateItemIdleExpandedPreview() {
             state = UpdateItemState(
                 downloadId = "preview",
                 buildDate = "Apr 27",
-                buildVersion = "LineageOS 23.2",
+                buildVersion = "DerpFest v16.0",
                 status = "",
                 isLocal = false,
                 fileSize = "1.1 GB",
@@ -314,7 +314,7 @@ private fun UpdateItemDownloadingPreview() {
             state = UpdateItemState(
                 downloadId = "preview",
                 buildDate = "Apr 27",
-                buildVersion = "LineageOS 23.2",
+                buildVersion = "DerpFest v16.0",
                 status = "Downloading",
                 isLocal = false,
                 fileSize = "1.1 GB",
