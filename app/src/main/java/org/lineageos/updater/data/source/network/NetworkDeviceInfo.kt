@@ -25,12 +25,14 @@ data class NetworkDeviceInfoResponse(
 @JsonIgnoreUnknownKeys
 data class NetworkDeviceInfo(
     @SerialName("codename") val codename: String,
+    @SerialName("device_name") val deviceName: String? = null,
     @SerialName("maintainer") val maintainer: String? = null,
     @SerialName("support_group") val supportGroup: String? = null,
 )
 
 fun NetworkDeviceInfo.toDeviceMetadata(): DeviceMetadata = DeviceMetadata(
     maintainer = maintainer?.takeIf(String::isNotBlank),
+    device = deviceName?.takeIf(String::isNotBlank),
     telegram = normalizeTelegramUrl(supportGroup) ?: DeviceMetadata.DEFAULT_TELEGRAM,
 )
 
