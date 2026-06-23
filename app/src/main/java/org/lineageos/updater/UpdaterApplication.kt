@@ -15,6 +15,7 @@ import org.lineageos.updater.data.UpdatesRepository
 import org.lineageos.updater.data.UserPreferencesRepository
 import org.lineageos.updater.data.source.local.UpdatesDatabase
 import org.lineageos.updater.data.source.local.UpdatesLocalDataSource
+import org.lineageos.updater.data.source.network.DeviceInfoNetworkDataSource
 import org.lineageos.updater.data.source.network.UpdatesNetworkDataSource
 import org.lineageos.updater.notifications.NotificationHelper
 import org.lineageos.updater.util.BatteryMonitor
@@ -24,6 +25,7 @@ class UpdaterApplication : Application() {
     private val coroutineScope = MainScope()
     private val database by lazy { UpdatesDatabase.getInstance(applicationContext) }
     private val networkDataSource by lazy { UpdatesNetworkDataSource(applicationContext) }
+    private val deviceInfoDataSource by lazy { DeviceInfoNetworkDataSource(applicationContext) }
     private val localDataSource by lazy { UpdatesLocalDataSource(database.updateDao()) }
 
 
@@ -39,6 +41,7 @@ class UpdaterApplication : Application() {
             networkMonitor = networkMonitor,
             notificationHelper = notificationHelper,
             networkDataSource = networkDataSource,
+            deviceInfoDataSource = deviceInfoDataSource,
             localDataSource = localDataSource,
         )
     }

@@ -23,6 +23,7 @@
           {device} - Device name
     -->
     <string name="updater_server_url" translatable="false">https://raw.githubusercontent.com/DerpFest-AOSP/Updater-Stuff/master/{device}.json</string>
+    <string name="device_info_url" translatable="false">https://raw.githubusercontent.com/DerpFest-AOSP/Updater-Stuff/master/info/device-info.json</string>
 
     <string name="verification_failed_notification">Verification failed</string>
     <string name="verifying_download_notification">Verifying update</string>
@@ -119,6 +120,10 @@
     <string name="report_issue_url" translatable="false">https://github.com/LineageOS/issues/issues</string>
     <string name="header_review_updates">Review updates and recent changes on</string>
     <string name="header_download_url" translatable="false">https://derpfest.org/devices</string>
+    <string name="updater_link_telegram">Telegram</string>
+    <string name="updater_link_downloads">Downloads</string>
+    <string name="updater_build_unofficial">Unofficial build</string>
+    <string name="updater_maintainer_by">by <xliff:g id="maintainer" example="NurKeinNeid">%1$s</xliff:g></string>
     <string name="found_bug">Found a bug? Report it with our bug report guide:</string>
 
     <string name="updates_zero_state_title">No updates available</string>

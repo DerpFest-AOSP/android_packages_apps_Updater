@@ -8,9 +8,13 @@ package org.lineageos.updater.data
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import org.lineageos.updater.data.source.local.UpdatesLocalDataSource
+import org.lineageos.updater.data.source.network.DeviceInfoNetworkDataSource
 import org.lineageos.updater.data.source.network.UpdatesNetworkDataSource
 import org.lineageos.updater.data.source.network.toUpdate
 import org.lineageos.updater.deviceinfo.DeviceInfoUtils
@@ -24,8 +28,12 @@ class UpdatesRepository(
     private val networkMonitor: NetworkMonitor,
     private val notificationHelper: NotificationHelper,
     private val networkDataSource: UpdatesNetworkDataSource,
+    private val deviceInfoDataSource: DeviceInfoNetworkDataSource,
     private val localDataSource: UpdatesLocalDataSource,
 ) {
+    private val _deviceMetadata = MutableStateFlow(DeviceMetadata())
+    val deviceMetadata: StateFlow<DeviceMetadata> = _deviceMetadata.asStateFlow()
+
     fun observeLocalUpdates(): Flow<List<Update>> = localDataSource.observeUpdates()
 
     /**
@@ -44,9 +52,21 @@ class UpdatesRepository(
             localDataSource.getUpdates()
         }.associateBy { it.downloadId }
 
-        val networkUpdates = withContext(Dispatchers.IO) {
-            networkDataSource.fetchUpdates().map { it.toUpdate() }.filter { filterUpdates(it) }
+        try {
+            _deviceMetadata.value = withContext(Dispatchers.IO) {
+                deviceInfoDataSource.fetchDeviceMetadata()
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to fetch device metadata", e)
         }
+
+        val networkUpdatesRaw = withContext(Dispatchers.IO) {
+            networkDataSource.fetchUpdates()
+        }
+
+        val networkUpdates = networkUpdatesRaw
+            .map { it.toUpdate() }
+            .filter { filterUpdates(it) }
 
         val networkIds = networkUpdates.map { it.downloadId }.toSet()
 
