@@ -117,7 +117,7 @@
     <string name="security_update">Security update</string>
     <string name="show_changelog">Recent changes</string>
     <string name="report_issues">Report issues</string>
-    <string name="report_issue_url" translatable="false">https://github.com/LineageOS/issues/issues</string>
+    <string name="report_issue_url" translatable="false">https://github.com/DerpFest-AOSP/issues/issues</string>
     <string name="header_review_updates">Review updates and recent changes on</string>
     <string name="header_download_url" translatable="false">https://derpfest.org/devices</string>
     <string name="updater_link_telegram">Telegram</string>
