@@ -57,6 +57,9 @@ private const val MARK_X_HEIGHT_RATIO = 0.55f
 // Brand guide: "Do not warp, transform". Derive width from height to keep logo proportions.
 private const val MARK_WIDTH_MULTIPLIER = 506.27f / 81.72f
 
+// Standalone header mark: nudge above the text-x-height baseline used with version text.
+private const val MARK_SIZE_MULTIPLIER = 1.12f
+
 // Pattern: preferred circle radius before snapping the pattern to the card height.
 private const val PATTERN_BASE_RADIUS_DP = 25
 
@@ -224,7 +227,7 @@ fun UpdaterCard(
     val markHeight = remember(versionStyle, density) {
         with(density) { (versionStyle.fontSize.toPx() * MARK_X_HEIGHT_RATIO).toDp() }
     }
-    val markWidth = markHeight * MARK_WIDTH_MULTIPLIER
+    val markWidth = markHeight * MARK_WIDTH_MULTIPLIER * MARK_SIZE_MULTIPLIER
     val bylineText = if (!maintainer.isNullOrBlank()) {
         stringResource(R.string.updater_maintainer_by, maintainer)
     } else {
@@ -253,6 +256,7 @@ fun UpdaterCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(SettingsDimension.paddingLarge)
+                        .padding(top = SettingsSpace.medium3)
                         .semantics(mergeDescendants = true) {},
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
