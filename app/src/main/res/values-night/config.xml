@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     SPDX-FileCopyrightText: DerpFest AOSP
+     SPDX-License-Identifier: Apache-2.0
+-->
+<resources>
+    <!-- Header ripple gradient -->
+    <color name="brand_accent_gradient_start">@android:color/system_accent3_200</color>
+    <color name="brand_accent_gradient_end">@android:color/system_accent1_100</color>
+</resources>

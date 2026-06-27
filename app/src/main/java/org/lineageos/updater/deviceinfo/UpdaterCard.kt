@@ -5,11 +5,8 @@
 
 package org.lineageos.updater.deviceinfo
 
-import android.graphics.RuntimeShader
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,12 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
@@ -48,8 +42,6 @@ import com.android.settingslib.spa.framework.theme.SettingsShape.CornerExtraLarg
 import com.android.settingslib.spa.framework.theme.SettingsSpace
 import com.android.settingslib.spa.framework.theme.SettingsTheme
 import org.lineageos.updater.R
-import kotlin.math.max
-import kotlin.math.roundToInt
 
 // Brand guide: "Mark height based on text x-height". Approximate Roboto x-height from font size.
 private const val MARK_X_HEIGHT_RATIO = 0.55f
@@ -59,139 +51,6 @@ private const val MARK_WIDTH_MULTIPLIER = 506.27f / 81.72f
 
 // Standalone header mark: nudge above the text-x-height baseline used with version text.
 private const val MARK_SIZE_MULTIPLIER = 1.12f
-
-// Pattern: preferred circle radius before snapping the pattern to the card height.
-private const val PATTERN_BASE_RADIUS_DP = 25
-
-// Pattern: keep each tile proportional to the circle radius on every screen size.
-private const val PATTERN_TILE_RADIUS_RATIO = 6f
-
-private const val PATTERN_SHADER_SRC =
-    """ uniform float iTileSize;
-    uniform float iRadius;
-    uniform float2 iResolution;
-    layout(color) uniform half4 iPatternColor;
-    layout(color) uniform half4 iSheenColor;
-
-    float circleAlpha(float2 point, float2 center, float radius) {
-        return smoothstep(radius + 1.0, radius - 1.0, length(point - center));
-    }
-
-    float bottomSemiAlpha(float2 point, float2 center, float radius) {
-        return circleAlpha(point, center, radius) * step(center.y, point.y);
-    }
-
-    float rightSemiAlpha(float2 point, float2 center, float radius) {
-        return circleAlpha(point, center, radius) * step(center.x, point.x);
-    }
-
-    half4 main(float2 fragCoord) {
-        float tileSize = iTileSize;
-        float radius = iRadius;
-        float2 local = mod(fragCoord, tileSize);
-        float hit = 0.0;
-
-        /* Accumulate coverage from this tile and its 8 neighbours. */
-        for (int dy = -1; dy <= 1; dy++) {
-            for (int dx = -1; dx <= 1; dx++) {
-                float2 point = local - float2(float(dx), float(dy)) * tileSize;
-
-                /* Full circles. */
-                hit = max(hit, circleAlpha(point, float2(tileSize / 3.0, 0.0), radius));
-                hit = max(
-                    hit,
-                    circleAlpha(point, float2(tileSize * 2.0 / 3.0, tileSize / 3.0), radius)
-                );
-                hit = max(hit, circleAlpha(point, float2(0.0, tileSize * 2.0 / 3.0), radius));
-
-                /* Bottom semicircles. */
-                hit = max(
-                    hit,
-                    bottomSemiAlpha(
-                        point,
-                        float2(tileSize / 3.0, tileSize * 2.0 / 3.0),
-                        radius
-                    )
-                );
-                hit = max(hit, bottomSemiAlpha(point, float2(tileSize * 2.0 / 3.0, 0.0), radius));
-                hit = max(
-                    hit,
-                    bottomSemiAlpha(point, float2(0.0, tileSize / 3.0), radius)
-                );
-                hit = max(
-                    hit,
-                    bottomSemiAlpha(point, float2(tileSize / 2.0, tileSize / 2.0), radius)
-                );
-                hit = max(
-                    hit,
-                    bottomSemiAlpha(
-                        point,
-                        float2(tileSize * 5.0 / 6.0, tileSize * 5.0 / 6.0),
-                        radius
-                    )
-                );
-                hit = max(
-                    hit,
-                    bottomSemiAlpha(point, float2(tileSize / 6.0, tileSize / 6.0), radius)
-                );
-
-                /* Right semicircles. */
-                hit = max(
-                    hit,
-                    rightSemiAlpha(point, float2(tileSize / 2.0, tileSize * 5.0 / 6.0), radius)
-                );
-                hit = max(
-                    hit,
-                    rightSemiAlpha(point, float2(tileSize * 5.0 / 6.0, tileSize / 6.0), radius)
-                );
-                hit = max(
-                    hit,
-                    rightSemiAlpha(point, float2(tileSize / 6.0, tileSize / 2.0), radius)
-                );
-                hit = max(
-                    hit,
-                    rightSemiAlpha(
-                        point,
-                        float2(tileSize * 2.0 / 3.0, tileSize * 2.0 / 3.0),
-                        radius
-                    )
-                );
-                hit = max(hit, rightSemiAlpha(point, float2(0.0, 0.0), radius));
-                hit = max(
-                    hit,
-                    rightSemiAlpha(point, float2(tileSize / 3.0, tileSize / 3.0), radius)
-                );
-            }
-        }
-
-        /* Layer 1 — tiled shapes at 10% opacity. */
-        float patternAlpha = 0.10 * hit * iPatternColor.a;
-        half4 pattern = half4(iPatternColor.rgb * patternAlpha, patternAlpha);
-
-        /*
-         * Layer 2 — linear sheen, clipped to the same pattern coverage.
-         * The extra 16% multiplier matches the exported design opacity.
-         */
-        float2 gradEnd = float2(iResolution.x * 1.0314, iResolution.y * 0.9208);
-        float2 dir = gradEnd;
-        float t = clamp(dot(fragCoord, dir) / dot(dir, dir), 0.0, 1.0);
-
-        float gradAlpha;
-        if (t <= 0.326923) {
-            gradAlpha = 0.16;
-        } else if (t <= 0.66) {
-            gradAlpha = mix(0.16, 1.0, (t - 0.326923) / (0.66 - 0.326923));
-        } else {
-            gradAlpha = mix(1.0, 0.08, (t - 0.66) / (1.0 - 0.66));
-        }
-
-        float sheenAlpha = gradAlpha * 0.16 * hit * iSheenColor.a;
-        half4 sheen = half4(iSheenColor.rgb * sheenAlpha, sheenAlpha);
-
-        /* Composite sheen over the base pattern. */
-        return sheen + pattern * (1.0 - sheen.a);
-    }
-"""
 
 @Composable
 fun UpdaterCard(
@@ -204,10 +63,10 @@ fun UpdaterCard(
     maintainer: String? = null,
     device: String? = null,
 ) {
-    val brandColor = colorResource(R.color.brand_primary)
-    val onBrandColor = colorResource(R.color.on_brand_surface)
-    val patternColor = colorResource(R.color.brand_pattern)
-    val sheenColor = colorResource(R.color.brand_sheen)
+    val containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    val contentColor = MaterialTheme.colorScheme.onSurface
+    val accentStart = colorResource(R.color.brand_accent_gradient_start)
+    val accentEnd = colorResource(R.color.brand_accent_gradient_end)
 
     val density = LocalDensity.current
     val displayLarge = MaterialTheme.typography.displayLarge
@@ -239,17 +98,14 @@ fun UpdaterCard(
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent,
-            contentColor = onBrandColor,
+            contentColor = contentColor,
         ),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(brandColor)
-                .updaterHeaderPattern(
-                    patternColor = patternColor,
-                    sheenColor = sheenColor,
-                ),
+        UpdaterHeaderRippleBox(
+            baseColor = containerColor,
+            accentStart = accentStart,
+            accentEnd = accentEnd,
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Column(
@@ -265,8 +121,8 @@ fun UpdaterCard(
                         contentDescription = stringResource(R.string.brand_name),
                         modifier = Modifier.width(markWidth),
                         contentScale = ContentScale.FillWidth,
-                        // Brand guide: "Use white when on dark backgrounds".
-                        colorFilter = ColorFilter.tint(onBrandColor),
+                        // Match onSurface so the mark reads on surfaceContainerHighest.
+                        colorFilter = ColorFilter.tint(contentColor),
                     )
 
                     Spacer(modifier = Modifier.height(SettingsSpace.medium3))
@@ -274,7 +130,7 @@ fun UpdaterCard(
                     Text(
                         text = bylineText,
                         style = MaterialTheme.typography.titleMedium,
-                        color = onBrandColor.copy(alpha = 0.9f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                     )
                 }
@@ -314,33 +170,6 @@ fun UpdaterCard(
                 }
             }
         }
-    }
-}
-
-private fun Modifier.updaterHeaderPattern(
-    patternColor: Color,
-    sheenColor: Color,
-): Modifier = drawWithCache {
-    /*
-     * Snap radius to height so each border lands at a circle start or center,
-     * avoiding random cropped arcs.
-     */
-    val baseRadiusPx = PATTERN_BASE_RADIUS_DP.dp.toPx()
-    val radiusSteps = max(1, (size.height / baseRadiusPx).roundToInt())
-    val radiusPx = size.height / radiusSteps
-    val tileSizePx = radiusPx * PATTERN_TILE_RADIUS_RATIO
-
-    val shader = RuntimeShader(PATTERN_SHADER_SRC).apply {
-        setFloatUniform("iTileSize", tileSizePx)
-        setFloatUniform("iRadius", radiusPx)
-        setFloatUniform("iResolution", size.width, size.height)
-        setColorUniform("iPatternColor", patternColor.toArgb())
-        setColorUniform("iSheenColor", sheenColor.toArgb())
-    }
-    val brush = ShaderBrush(shader)
-
-    onDrawBehind {
-        drawRect(brush)
     }
 }
 

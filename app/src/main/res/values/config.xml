@@ -16,6 +16,10 @@
     <!-- Sheen gradient color -->
     <color name="brand_sheen">#EADDFF</color>
 
+    <!-- Header ripple gradient -->
+    <color name="brand_accent_gradient_start">@android:color/system_accent3_600</color>
+    <color name="brand_accent_gradient_end">@android:color/system_accent1_600</color>
+
     <!-- URL template for opening the device-specific downloads page from the update menu. -->
     <string name="menu_downloads_url" translatable="false">https://derpfest.org/devices?s=<xliff:g id="device_name">%1$s</xliff:g></string>
 </resources>
