@@ -43,7 +43,8 @@ import org.lineageos.updater.R
 import org.lineageos.updater.ui.Lottie
 import java.util.Date
 
-private const val MIN_CHECKING_DURATION_MILLIS = 2_000L
+// Matches sysupdater_progress.json loop length (~3.9s at 30 fps).
+private const val MIN_CHECKING_DURATION_MILLIS = 4_000L
 
 // Matches SettingsLib's expressive zero-state background size.
 private val AnimationSize = 160.dp
