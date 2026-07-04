@@ -111,6 +111,12 @@ class UpdatesRepository(
             return false
         }
 
+        // osSdkLevel == 0 means unknown (e.g. DerpFest JSON API without os_sdk_level).
+        if (update.osSdkLevel > 0 && update.osSdkLevel < DeviceInfoUtils.sdkLevel) {
+            Log.d(TAG, "${update.name} is older than current Android version")
+            return false
+        }
+
         return true
     }
 }

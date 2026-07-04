@@ -42,5 +42,6 @@ fun NetworkUpdate.toUpdate(): Update = Update(
     fileSize = size,
     downloadUrl = url,
     version = version,
+    osSdkLevel = 0,
     isAvailableOnline = true,
 )
