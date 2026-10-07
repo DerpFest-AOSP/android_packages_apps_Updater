@@ -48,10 +48,6 @@ class UpdatesRepository(
     suspend fun fetchUpdates(): Long? {
         if (!networkMonitor.currentNetworkState.isOnline) return null
 
-        val localUpdates = withContext(Dispatchers.IO) {
-            localDataSource.getUpdates()
-        }.associateBy { it.downloadId }
-
         try {
             _deviceMetadata.value = withContext(Dispatchers.IO) {
                 deviceInfoDataSource.fetchDeviceMetadata()
@@ -60,13 +56,25 @@ class UpdatesRepository(
             Log.w(TAG, "Failed to fetch device metadata", e)
         }
 
-        val networkUpdatesRaw = withContext(Dispatchers.IO) {
-            networkDataSource.fetchUpdates()
+        val localUpdates = withContext(Dispatchers.IO) {
+            localDataSource.getUpdates()
+        }.associateBy { it.downloadId }
+
+        // Remove local entries that can no longer be installed before merging the server list.
+        withContext(Dispatchers.IO) {
+            localUpdates.values.filter {
+                it.downloadId != Update.LOCAL_ID && !filterUpdates(it)
+            }.forEach {
+                it.file?.delete()
+                localDataSource.removeUpdate(it.downloadId)
+            }
         }
 
-        val networkUpdates = networkUpdatesRaw
-            .map { it.toUpdate() }
-            .filter { filterUpdates(it) }
+        val networkUpdates = withContext(Dispatchers.IO) {
+            networkDataSource.fetchUpdates().map { it.toUpdate() }.filter { filterUpdates(it) }
+        }
+
+        if (networkUpdates.isEmpty()) return System.currentTimeMillis()
 
         val networkIds = networkUpdates.map { it.downloadId }.toSet()
 
@@ -89,7 +97,8 @@ class UpdatesRepository(
 
             // Delete temp files and DB entries for updates no longer advertised by the server.
             localUpdates.values.filter {
-                it.downloadId !in networkIds && it.downloadId != Update.LOCAL_ID
+                it.downloadId !in networkIds && it.downloadId != Update.LOCAL_ID &&
+                        it.downloadUrl != null
             }.forEach {
                 it.file?.delete()
                 localDataSource.removeUpdate(it.downloadId)
@@ -105,6 +114,12 @@ class UpdatesRepository(
 
         if (!DeviceInfoUtils.isDowngradingAllowed && (isOlderBuild || isCurrentBuild)) {
             Log.d(TAG, "${update.name} is not newer than the current build")
+            return false
+        }
+
+        // osSdkLevel == 0 means unknown (e.g. DerpFest JSON API without os_sdk_level).
+        if (update.osSdkLevel > 0 && update.osSdkLevel < DeviceInfoUtils.sdkLevel) {
+            Log.d(TAG, "${update.name} is older than current Android version")
             return false
         }
 
