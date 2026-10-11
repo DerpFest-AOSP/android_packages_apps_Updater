@@ -56,13 +56,25 @@ class UpdatesRepository(
             Log.w(TAG, "Failed to fetch device metadata", e)
         }
 
-        val networkUpdatesRaw = withContext(Dispatchers.IO) {
-            networkDataSource.fetchUpdates()
+        val localUpdates = withContext(Dispatchers.IO) {
+            localDataSource.getUpdates()
+        }.associateBy { it.downloadId }
+
+        // Remove local entries that can no longer be installed before merging the server list.
+        withContext(Dispatchers.IO) {
+            localUpdates.values.filter {
+                it.downloadId != Update.LOCAL_ID && !filterUpdates(it)
+            }.forEach {
+                it.file?.delete()
+                localDataSource.removeUpdate(it.downloadId)
+            }
         }
 
-        val networkUpdates = networkUpdatesRaw
-            .map { it.toUpdate() }
-            .filter { filterUpdates(it) }
+        val networkUpdates = withContext(Dispatchers.IO) {
+            networkDataSource.fetchUpdates().map { it.toUpdate() }.filter { filterUpdates(it) }
+        }
+
+        if (networkUpdates.isEmpty()) return System.currentTimeMillis()
 
         if (networkUpdates.isEmpty()) return System.currentTimeMillis()
 
